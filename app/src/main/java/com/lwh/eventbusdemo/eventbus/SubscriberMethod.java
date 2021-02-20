@@ -21,7 +21,7 @@ public class SubscriberMethod {
   final boolean mSticky; // 是否粘性
 
   @Nullable
-  private String mMethodString;
+  String mMethodString;
 
   public SubscriberMethod(Method method, ThreadMode threadMode, Class<?> eventType, int priority,
       boolean sticky) {

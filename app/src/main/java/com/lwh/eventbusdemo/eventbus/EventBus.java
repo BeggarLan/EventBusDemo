@@ -1,5 +1,7 @@
 package com.lwh.eventbusdemo.eventbus;
 
+import androidx.viewpager.widget.ViewPager;
+
 /**
  * author: lanweihua
  * created on: 2/8/21 2:50 PM
@@ -8,5 +10,10 @@ package com.lwh.eventbusdemo.eventbus;
 public class EventBus {
 
   static final String TAG = "EventBus";
+
+  ViewPager mViewPager;
+  private void aa(){
+    mViewPager.dispatchSetSelected(true);
+  }
 
 }
