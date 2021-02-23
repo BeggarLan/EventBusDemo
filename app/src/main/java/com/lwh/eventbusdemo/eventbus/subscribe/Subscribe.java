@@ -1,4 +1,4 @@
-package com.lwh.eventbusdemo.eventbus;
+package com.lwh.eventbusdemo.eventbus.subscribe;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

@@ -7,7 +7,7 @@ import android.os.SystemClock;
 import androidx.annotation.NonNull;
 
 import com.lwh.eventbusdemo.eventbus.EventBus;
-import com.lwh.eventbusdemo.eventbus.Subscription;
+import com.lwh.eventbusdemo.eventbus.subscribe.Subscription;
 import com.lwh.eventbusdemo.eventbus.exception.EventBusException;
 
 /**

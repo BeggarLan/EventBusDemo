@@ -1,4 +1,4 @@
-package com.lwh.eventbusdemo.eventbus;
+package com.lwh.eventbusdemo.eventbus.subscribe;
 
 /**
  * dinfgyuehz

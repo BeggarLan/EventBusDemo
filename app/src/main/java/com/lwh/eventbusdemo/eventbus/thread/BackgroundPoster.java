@@ -1,7 +1,7 @@
 package com.lwh.eventbusdemo.eventbus.thread;
 
 import com.lwh.eventbusdemo.eventbus.EventBus;
-import com.lwh.eventbusdemo.eventbus.Subscription;
+import com.lwh.eventbusdemo.eventbus.subscribe.Subscription;
 
 /**
  * author: lanweihua
