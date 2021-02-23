@@ -6,7 +6,7 @@ import com.lwh.eventbusdemo.eventbus.Subscription;
 /**
  * author: lanweihua
  * created on: 2/20/21 5:14 PM
- * description: 后台执行的poster
+ * description: 后台执行的poster,耗时的任务应该由AsyncPoster去执行
  */
 public class BackgroundPoster implements Runnable, Poster {
 

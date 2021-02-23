@@ -8,7 +8,7 @@ package com.lwh.eventbusdemo.eventbus;
  */
 public class Subscription {
 
-  // 事件对象
+  // 订阅函数所在的类对象
   final Object mSubscriber;
   // 事件订阅者
   final SubscriberMethod mSubscriberMethod;
