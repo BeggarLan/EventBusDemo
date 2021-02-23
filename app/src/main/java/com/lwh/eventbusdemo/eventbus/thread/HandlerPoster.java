@@ -19,7 +19,7 @@ public class HandlerPoster extends Handler implements Poster {
 
   private PendingPostQueue mQueue; // 消息队列
   private EventBus mEventBus; // 事件总线
-  private boolean mHandleActive; // 是否通知handler处理消息
+  private volatile boolean mHandleActive; // 是否通知handler处理消息
   private int mMaxInsideHandleTimeMs; // handler每次运行的最长事件，防止事件过长堵塞主线程
 
   public HandlerPoster(EventBus eventBus, Looper looper, int maxInsideHandleTimeMs) {
