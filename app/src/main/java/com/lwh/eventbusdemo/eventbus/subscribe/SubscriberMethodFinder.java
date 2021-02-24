@@ -66,6 +66,19 @@ public class SubscriberMethodFinder {
   // 使用方式查找某类的所有订阅方法
   @Nullable
   private List<SubscriberMethod> findUsingReflection(Class<?> subscriberClass) {
+    SubscribeFindState findState = prepareFindState();
+    // 初始化
+    findState.initFindState(subscriberClass);
+    while (findState.mClazz != null) {
+      // 将subscriberClass和他的所有祖先类逐一查找
+      findUsingReflectionInSingleClass(findState);
+      findState.moveToSuperClass();
+    }
+
+  }
+
+  private void findUsingReflectionInSingleClass(SubscribeFindState findState) {
+    Class<?> subscriberClass = findState.mClazz;
     Method[] methods = subscriberClass.getDeclaredMethods();
     for (Method method : methods) {
       int modifiers = method.getModifiers();
@@ -86,7 +99,6 @@ public class SubscriberMethodFinder {
       }
 
     }
-
   }
 
   // 生产FindState
