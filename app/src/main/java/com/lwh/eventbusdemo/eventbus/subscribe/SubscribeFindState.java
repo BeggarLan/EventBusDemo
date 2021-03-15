@@ -15,10 +15,10 @@ public class SubscribeFindState {
 
   // 订阅类所有的订阅方法（包含父类）
   public List<SubscriberMethod> mSubscriberMethods = new ArrayList<>();
-  // 用于同一类中不同方法订阅了同一种类型的事件，key：事件类型     value：订阅方法
-  private Map<Class<?>, Object> mAnyMethodByEventType = new HashMap<>();
   // 用于子类和父类相同的订阅方法(子类复写父类方法)，key: 方法签名    value：方法所在的类
   private Map<String, Class<?>> mSubscribeClassByMethodKey = new HashMap<>();
+  // methodKey的构建器
+  private final StringBuilder mMethodBuilder = new StringBuilder(128);
   // 订阅者class
   public Class<?> mSubscribeClass;
   // 用于迭代查找父类
@@ -57,20 +57,31 @@ public class SubscribeFindState {
    * @return true为允许添加该订阅方法
    */
   public boolean checkAdd(Class<?> eventType, Method method) {
-    Object existing = mAnyMethodByEventType.put(eventType, method);
-    if (existing == null) {
+    mMethodBuilder.setLength(0);
+    mMethodBuilder.append(method.getName())
+        .append(">")
+        .append(eventType.getName());
+    String methodKey = mMethodBuilder.toString();
+    Class<?> methodClass = method.getDeclaringClass();
+    Class<?> methodClassOld = mSubscribeClassByMethodKey.put(methodKey, methodClass);
+    // 如果子类没有该方法
+    if (methodClassOld == null || methodClassOld.isAssignableFrom(methodClass)) {
       return true;
-
-      // 该类型的事件存在多个函数订阅
-    }else{
-      if(existing instanceof Method){
-
-      }else {
-        return
-      }
+    } else {
+      // 撤销上面的put操作
+      mSubscribeClassByMethodKey.put(methodKey, methodClassOld);
+      return false;
     }
   }
 
-  private boolean check
+  // 资源释放
+  public void recycle() {
+    mSubscriberMethods.clear();
+    mSubscribeClassByMethodKey.clear();
+    mMethodBuilder.setLength(0);
+    mSubscribeClass = null;
+    mClazz = null;
+    mSkipSuperClass = false;
+  }
 
 }
