@@ -11,12 +11,12 @@ import java.util.Map;
  * created on: 2/23/21 4:17 PM
  * description: 订阅方法查找状态
  */
-public class SubscribeFindState {
+public class SubscriberFindState {
 
   // 订阅类所有的订阅方法（包含父类）
   public List<SubscriberMethod> mSubscriberMethods = new ArrayList<>();
   // 用于子类和父类相同的订阅方法(子类复写父类方法)，key: 方法签名    value：方法所在的类
-  private Map<String, Class<?>> mSubscribeClassByMethodKey = new HashMap<>();
+  private final Map<String, Class<?>> mSubscribeClassByMethodKey = new HashMap<>();
   // methodKey的构建器
   private final StringBuilder mMethodBuilder = new StringBuilder(128);
   // 订阅者class

@@ -2,6 +2,7 @@ package com.lwh.eventbusdemo.eventbus.subscribe;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -10,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.lwh.eventbusdemo.eventbus.exception.EventBusException;
+import com.lwh.eventbusdemo.eventbus.thread.ThreadMode;
 import com.lwh.eventbusdemo.util.CollectionsUtils;
 
 /**
@@ -28,12 +30,13 @@ public class SubscriberMethodFinder {
 
   // 订阅者查询状态pool
   private static final int FIND_STATE_POLL_SIZE = 4;
-  private static final SubscribeFindState[] sFindStatePool =
-      new SubscribeFindState[FIND_STATE_POLL_SIZE];
+  private static final SubscriberFindState[] sFindStatePool =
+      new SubscriberFindState[FIND_STATE_POLL_SIZE];
 
   // 是否使用代码生成（目前不支持，仅支持反射）
   private final boolean mUseGenerateCode;
 
+  // TODO: 3/15/21  目前不支持代码生成，仅支持反射
   public SubscriberMethodFinder(boolean useGenerateCode) {
     this.mUseGenerateCode = false;
   }
@@ -66,7 +69,7 @@ public class SubscriberMethodFinder {
   // 使用方式查找某类的所有订阅方法
   @Nullable
   private List<SubscriberMethod> findUsingReflection(Class<?> subscriberClass) {
-    SubscribeFindState findState = prepareFindState();
+    SubscriberFindState findState = prepareFindState();
     // 初始化
     findState.initFindState(subscriberClass);
     while (findState.mClazz != null) {
@@ -74,10 +77,10 @@ public class SubscriberMethodFinder {
       findUsingReflectionInSingleClass(findState);
       findState.moveToSuperClass();
     }
-
+    return getMethodsAndRelease(findState);
   }
 
-  private void findUsingReflectionInSingleClass(SubscribeFindState findState) {
+  private void findUsingReflectionInSingleClass(SubscriberFindState findState) {
     Class<?> subscriberClass = findState.mClazz;
     Method[] methods = subscriberClass.getDeclaredMethods();
     for (Method method : methods) {
@@ -90,29 +93,52 @@ public class SubscriberMethodFinder {
       if (!method.isAnnotationPresent(Subscribe.class)) {
         continue;
       }
-      Class<?>[] prameterTypes = method.getParameterTypes();
-      if (prameterTypes.length == 1) {
-
+      Class<?>[] parameterTypes = method.getParameterTypes();
+      if (parameterTypes.length == 1) {
+        Subscribe subscribeAnnotation = method.getAnnotation(Subscribe.class);
+        Class<?> eventType = parameterTypes[0];
+        if (findState.checkAdd(eventType, method)) {
+          ThreadMode threadMode = subscribeAnnotation.threadMode();
+          int priority = subscribeAnnotation.priority();
+          boolean sticky = subscribeAnnotation.sticky();
+          findState.mSubscriberMethods
+              .add(new SubscriberMethod(method, threadMode, eventType, priority, sticky));
+        }
       } else {
         throw new EventBusException(
-            "@Subscribe method Parameter must is one,but is " + prameterTypes.length);
+            "@Subscribe method Parameter must is one,but is " + parameterTypes.length);
       }
-
     }
   }
 
+  // 返回fondState的订阅方法
+  @NonNull
+  private List<SubscriberMethod> getMethodsAndRelease(@NonNull SubscriberFindState findState) {
+    List<SubscriberMethod> subscriberMethods = new ArrayList<>(findState.mSubscriberMethods);
+    findState.recycle();
+    synchronized (sFindStatePool) {
+      for (int i = 0; i < FIND_STATE_POLL_SIZE; i++) {
+        if (sFindStatePool[i] == null) {
+          sFindStatePool[i] = findState;
+          break;
+        }
+      }
+    }
+    return subscriberMethods;
+  }
+
   // 生产FindState
-  private SubscribeFindState prepareFindState() {
+  private SubscriberFindState prepareFindState() {
     synchronized (sFindStatePool) {
       for (int i = 0; i < FIND_STATE_POLL_SIZE; ++i) {
-        SubscribeFindState findState = sFindStatePool[i];
+        SubscriberFindState findState = sFindStatePool[i];
         if (findState != null) {
           sFindStatePool[i] = null;
           return findState;
         }
       }
     }
-    return new SubscribeFindState();
+    return new SubscriberFindState();
   }
 
   // 清除缓存
